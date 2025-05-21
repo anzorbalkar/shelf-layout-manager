@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D2BC9F00
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShelfLayoutManager.Infrastructure.Tests", "tests\ShelfLayoutManager.Infrastructure.Tests\ShelfLayoutManager.Infrastructure.Tests.csproj", "{C6CF6E09-DAC4-4F8F-8338-AE6E8BE2B290}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShelfLayoutManager.Client", "src\ShelfLayoutManager.Client\ShelfLayoutManager.Client.csproj", "{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,11 +42,16 @@ Global
 		{C6CF6E09-DAC4-4F8F-8338-AE6E8BE2B290}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6CF6E09-DAC4-4F8F-8338-AE6E8BE2B290}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6CF6E09-DAC4-4F8F-8338-AE6E8BE2B290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7E00E0C9-41E8-4016-8859-B4E907E35264} = {19AD1646-018A-4BD9-AF2E-9EE720AD3A25}
 		{DAA29651-C65A-4D54-ACE5-57A1466742DF} = {19AD1646-018A-4BD9-AF2E-9EE720AD3A25}
 		{066E8761-618B-42BC-9DE2-E08AA5969D4B} = {19AD1646-018A-4BD9-AF2E-9EE720AD3A25}
 		{C6CF6E09-DAC4-4F8F-8338-AE6E8BE2B290} = {D2BC9F00-7084-4E66-B42A-4E89E4533A2E}
+		{5C7E50A1-7239-4A9D-8EA8-FEE5A31CABA2} = {19AD1646-018A-4BD9-AF2E-9EE720AD3A25}
 	EndGlobalSection
 EndGlobal

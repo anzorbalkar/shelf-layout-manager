@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "src/ShelfLayoutManager.Client"
+		},
+		{
+			"path": "src/ShelfLayoutManager.Web"
+		}
+	],
+	"settings": {}
+}
