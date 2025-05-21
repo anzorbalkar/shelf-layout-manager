@@ -1,0 +1,77 @@
+.page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  flex: 0 0 16em;
+}
+
+.app-title {
+  align-items: center;
+  border-bottom: 1px solid var(--app-title-border);
+  color: var(--app-title-color);
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.nav-item {
+  align-items: center;
+  border-radius: .5rem;
+  color: var(--nav-item-color);
+  display: flex;
+  font-family: Inter;
+  gap: .75rem;
+  padding: .5rem;
+}
+
+.nav-item:hover {
+  background: var(--nav-item-hover-bg);
+}
+
+.active .nav-item {
+  color: var(--nav-item-active-color);
+}
+
+main {
+  flex: 1;
+  max-height: 100vh;
+  padding-bottom: 4rem;
+  padding-inline: 2rem;
+  padding-top: 2.5rem;
+  overflow: auto;
+}
+
+.theme-buttons {
+  background: var(--theme-buttons-bg);
+  border-radius: 2rem;
+  border: 1px solid var(--theme-buttons-border);
+  display: flex;
+  gap: .25rem;
+  line-height: 0;
+  padding: .4rem .5rem;
+  position: absolute;
+  right: 0;
+  top: -18px;
+}
+
+.theme-button {
+  border-radius: 1.5rem;
+  color: var(--theme-button-color);
+  cursor: pointer;
+  line-height: 0;
+  padding: .35rem .75rem;
+}
+
+.theme-button-active {
+  background: var(--theme-button-active-bg);
+  color: var(--theme-button-active-color);
+}
+
+.theme-button:not(.theme-button-active):hover {
+  background: var(--theme-button-hover-bg);
+}

@@ -1,0 +1,424 @@
+@page "/shelves"
+@inject HttpClient Http
+@inject IConfiguration Configuration
+
+<PageTitle>Shelves</PageTitle>
+
+<div class="page-centered">
+  @if (selectedCabinet is not null)
+  {
+    <span class="back-button" @onclick="DeselectCabinet">
+      <span class="material-symbols-outlined">arrow_back</span> Back
+    </span>
+  }
+
+  <div class="page-title">@(selectedCabinet is null ? "Shelves" : "Cabinet #" + selectedCabinet.Number)</div>
+
+  @if (selectedCabinet is null)
+  {
+    <div class="flex flex-col gap-6">
+      @foreach (var cabinet in cabinets)
+      {
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <div class="text-title cursor-pointer">
+              <span @onclick="@(e => SelectCabinet(cabinet))">Cabinet #@cabinet.Number</span>
+            </div>
+            <div class="text-light text-sm mb-1">
+              Position: @(cabinet.Position.X), @(cabinet.Position.Y), @(cabinet.Position.Z)
+            </div>
+            <div class="text-light text-sm">
+              Size: @(cabinet.Size.Width), @(cabinet.Size.Depth), @(cabinet.Size.Height)
+            </div>
+          </div>
+
+          @{
+            CabinetStatus cabinetStatus = @GetCabinetStatus(cabinet);
+          }
+
+          <div class="flex items-center">
+            <div class="badge @GetCabinetStatusBadgeClass(cabinetStatus)">
+              @GetCabinetStatusText(cabinetStatus)</div>
+          </div>
+        </div>
+
+        @if (cabinet != cabinets.Last())
+        {
+          <div class="hr"></div>
+        }
+      }
+    </div>
+  }
+  else
+  {
+    <div class="flex">
+      <div class="lhs"></div>
+      <div class="flex justify-center flex-1">
+        <div>
+          <div class="cabinet @(inMoveSkuMode ? "move-sku-mode" : "")">
+            @foreach (var row in selectedCabinet.Rows)
+            {
+              // Row.
+              <div class="row">
+                @foreach (var lane in row.Lanes)
+                {
+                  // Lane.
+                  <div class="lane @(GetLaneClasses(lane))" style="width: @laneWidthPercent" @onclick=@(e =>
+                                                                                                           LaneClicked(lane))>
+              @if (LaneIsEmpty(lane))
+                    {
+                      <span class="material-symbols-outlined">add_circle</span>
+                    }
+                    else if (LaneHasError(lane))
+                    {
+                      <span class="material-symbols-outlined">bug_report</span>
+                    }
+                    else
+                    {
+                      <img src="@skusByJanCode[@lane.JanCode]!.ImageUrl" width="100%" height="100%" class="object-contain">
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="rhs">
+        @if (selectedLane is null)
+        {
+          // No lane selection.
+          <div class="p-4 flex justify-center items-center" style="background: var(--get-started-bg)">
+            <span class="material-symbols-outlined">web_traffic</span>
+            <span class="text-lg ml-1">Select a lane to get started</span>
+          </div>
+        }
+        else
+        {
+          @if (string.IsNullOrEmpty(selectedLane.JanCode))
+          {
+            // Assignment is empty.
+            <div>
+              <input type="text" aria-label="Filter SKUs" placeholder="Filter" @bind-value="skuFilterText"
+                @oninput="SkuFilterTextChanged">
+              <div class="sku-options">
+                @foreach (Sku sku in skusByJanCode.Values.OrderBy(s => s.NameJp))
+                {
+                  @if (!string.IsNullOrEmpty(skuFilterText)
+                            && !string.IsNullOrEmpty(sku.NameEn)
+                            && !sku.NameEn.Contains(skuFilterText, StringComparison.InvariantCultureIgnoreCase))
+                  {
+                    continue;
+                  }
+
+                  // SKU option.
+                  <div class="sku-option @(sku == selectedSkuOption ? "sku-option-selected" : "")"
+                    @onclick="@(e => selectedSkuOption = sku)">
+                    <div class="sku-option-image">
+                      <img src="@sku.ImageUrl" width="100%" height="100%" class="object-contain">
+                    </div>
+                    <div class="flex flex-col">
+                      <div class="font-semibold">@sku.NameJp</div>
+                      <div>@sku.NameEn</div>
+                    </div>
+
+                  </div>
+                }
+              </div>
+              <div class="hr my-4"></div>
+              <button type="button" class="button button-green w-full" @onclick="AssignSkuButtonClicked"
+                disabled="@(selectedSkuOption is null ? true : null)">Assign SKU</button>
+            </div>
+          }
+          else if (selectedSku is null)
+          {
+            // Assigment has error.
+            <div class="flex items-center gap-0.5 text-error mb-2">
+              <span class="material-symbols-outlined">bug_report</span> Error
+            </div>
+            <div>
+              No SKU exists with assigned Jan Code: "@selectedLane.JanCode"
+            </div>
+            <div class="hr my-4"></div>
+            <button type="button" class="button button-red w-full" @onclick="RemoveSkuButtonClicked">Remove SKU</button>
+          }
+          else
+          {
+            // Assignment is good.
+            <div class="flex gap-4">
+              <div class="sku-option-image">
+                <img src="@selectedSku.ImageUrl" width="100%" height="100%" class="object-contain">
+              </div>
+              <div class="flex-1">
+                <div class="text-title">@selectedSku.NameJp</div>
+                <div>@selectedSku.NameEn</div>
+              </div>
+            </div>
+            <div class="hr my-4"></div>
+            <div class="flex gap-4">
+              <button type="button" class="button flex-1" @onclick="MoveSkuButtonClicked">
+                @(inMoveSkuMode ? "Cancel move" : "Move SKU...")
+              </button>
+              <button type="button" class="button button-red flex-1" @onclick="RemoveSkuButtonClicked"
+                disabled="@(inMoveSkuMode ? true : null)">Remove SKU</button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>
+
+@code {
+  private enum CabinetStatus
+  {
+    FullyAssigned,
+    MissingAssignments,
+    HasErrors
+  }
+
+  private Dictionary<string, Sku> skusByJanCode = new();
+
+  private Cabinet[] cabinets = Array.Empty<Cabinet>();
+
+  private string laneWidthPercent = "";
+
+  private Cabinet? selectedCabinet = null;
+
+  private Row? selectedRow = null;
+
+  private Lane? selectedLane = null;
+
+  private Sku? selectedSku = null;
+
+  private string? skuFilterText = null;
+
+  private Sku? selectedSkuOption = null;
+
+  private bool inMoveSkuMode = false;
+
+  protected override async Task OnInitializedAsync()
+  {
+    skusByJanCode = (await Http.GetFromJsonAsync<Sku[]>("v1/skus"))?.ToDictionary(sku => sku.JanCode) ?? new();
+
+    cabinets = await Http.GetFromJsonAsync<Cabinet[]>("v1/cabinets?includeRows=true&includeLanes=true") ?? [];
+  }
+
+  private CabinetStatus GetCabinetStatus(Cabinet cabinet)
+  {
+    foreach (Row row in cabinet.Rows)
+    {
+      foreach (Lane lane in row.Lanes)
+      {
+        if (string.IsNullOrEmpty(lane.JanCode))
+        {
+          return CabinetStatus.MissingAssignments;
+        }
+
+        if (!skusByJanCode.ContainsKey(lane.JanCode))
+        {
+          return CabinetStatus.HasErrors;
+        }
+      }
+    }
+
+    return CabinetStatus.FullyAssigned;
+  }
+
+  private string GetCabinetStatusText(CabinetStatus cabinetStatus) => cabinetStatus switch
+  {
+    CabinetStatus.FullyAssigned => "Fully assigned",
+    CabinetStatus.MissingAssignments => "Missing assignments",
+    CabinetStatus.HasErrors => "Has errors",
+    _ => ""
+  };
+
+  private string GetCabinetStatusBadgeClass(CabinetStatus cabinetStatus) => cabinetStatus switch
+  {
+    CabinetStatus.FullyAssigned => "badge-green",
+    CabinetStatus.MissingAssignments => "badge-orange",
+    CabinetStatus.HasErrors => "badge-red",
+    _ => ""
+  };
+
+  private string GetLaneClasses(Lane lane)
+  {
+    List<string> classes = new(2);
+
+    if (lane == selectedLane)
+    {
+      classes.Add("lane-selected");
+    }
+
+    if (LaneIsEmpty(lane))
+    {
+      classes.Add("lane-empty");
+    }
+
+    if (LaneHasError(lane))
+    {
+      classes.Add("lane-error");
+    }
+
+    return classes.Count == 0 ? "" : string.Join(' ', classes);
+  }
+
+  private bool LaneIsEmpty(Lane lane) => string.IsNullOrEmpty(lane.JanCode);
+
+  private bool LaneHasError(Lane lane) => !string.IsNullOrEmpty(lane.JanCode) && !skusByJanCode.ContainsKey(lane.JanCode);
+
+  private void SelectCabinet(Cabinet cabinet)
+  {
+    selectedCabinet = cabinet;
+
+    int maxLanes = selectedCabinet.Rows.Max(row => row.Lanes.Count);
+
+    laneWidthPercent = (100F / maxLanes).ToString() + "%";
+  }
+
+  private void DeselectCabinet()
+  {
+    selectedCabinet = null;
+    selectedRow = null;
+    selectedLane = null;
+    selectedSku = null;
+    skuFilterText = null;
+    selectedSkuOption = null;
+    inMoveSkuMode = false;
+  }
+
+  private async Task LaneClicked(Lane lane)
+  {
+    if (inMoveSkuMode)
+    {
+      await FinishMove(lane);
+    }
+    else
+    {
+      SelectLane(lane);
+    }
+  }
+
+  private void SelectLane(Lane lane)
+  {
+    skuFilterText = null;
+
+    selectedLane = lane;
+    selectedRow = GetLaneRow(lane);
+
+    SelectSku(lane);
+  }
+
+  private async Task FinishMove(Lane toLane)
+  {
+    inMoveSkuMode = false;
+
+    Row toRow = GetLaneRow(toLane);
+
+    CabinetSkuAssignment cabinetSkuAssignment = new()
+    {
+      CabinetNumber = selectedCabinet.Number,
+      JanCode = selectedLane.JanCode,
+      FromRowNumber = selectedRow.Number,
+      FromLaneNumber = selectedLane.Number,
+      ToRowNumber = toRow.Number,
+      ToLaneNumber = toLane.Number
+    };
+
+    // Move the SKU on screen.
+    toLane.JanCode = selectedLane.JanCode;
+    selectedLane.JanCode = null;
+
+    SelectLane(toLane);
+
+    HttpResponseMessage response = await Http.PostAsJsonAsync("v1/cabinets/-/assign-sku", cabinetSkuAssignment);
+
+    if (!response.IsSuccessStatusCode)
+    {
+      await PrintHttpErrorMessage(response);
+    }
+  }
+
+  private void SelectSku(Lane lane)
+  {
+    if (string.IsNullOrEmpty(lane.JanCode) || !skusByJanCode.ContainsKey(lane.JanCode))
+    {
+      selectedSku = null;
+    }
+    else
+    {
+      selectedSku = skusByJanCode[lane.JanCode];
+    }
+  }
+
+  private Row GetLaneRow(Lane lane) => selectedCabinet.Rows.First(row => row.Lanes.Contains(lane));
+
+  private void MoveSkuButtonClicked()
+  {
+    inMoveSkuMode = !inMoveSkuMode;
+
+    if (inMoveSkuMode)
+    {
+      return;
+    }
+  }
+
+  private async Task RemoveSkuButtonClicked()
+  {
+    CabinetSkuAssignment cabinetSkuAssignment = new()
+    {
+      CabinetNumber = selectedCabinet.Number,
+      JanCode = selectedLane.JanCode,
+      FromRowNumber = selectedRow.Number,
+      FromLaneNumber = selectedLane.Number
+    };
+
+    selectedLane.JanCode = null;
+    selectedSku = null;
+
+    HttpResponseMessage response = await Http.PostAsJsonAsync("v1/cabinets/-/assign-sku", cabinetSkuAssignment);
+
+    if (!response.IsSuccessStatusCode)
+    {
+      await PrintHttpErrorMessage(response);
+    }
+  }
+
+  private async Task AssignSkuButtonClicked()
+  {
+    string janCode = selectedSkuOption.JanCode;
+
+    CabinetSkuAssignment cabinetSkuAssignment = new()
+    {
+      CabinetNumber = selectedCabinet.Number,
+      JanCode = janCode,
+      ToRowNumber = selectedRow.Number,
+      ToLaneNumber = selectedLane.Number
+    };
+
+    selectedLane.JanCode = janCode;
+
+    SelectSku(selectedLane);
+
+    skuFilterText = null;
+    selectedSkuOption = null;
+
+    HttpResponseMessage response = await Http.PostAsJsonAsync("v1/cabinets/-/assign-sku", cabinetSkuAssignment);
+
+    if (!response.IsSuccessStatusCode)
+    {
+      await PrintHttpErrorMessage(response);
+    }
+  }
+
+  private void SkuFilterTextChanged(ChangeEventArgs e)
+  {
+    selectedSkuOption = null;
+    skuFilterText = e.Value as string;
+  }
+
+  private async Task PrintHttpErrorMessage(HttpResponseMessage response)
+  {
+    Console.WriteLine($"API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+  }
+}

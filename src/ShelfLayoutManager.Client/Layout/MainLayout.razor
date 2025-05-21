@@ -1,0 +1,57 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime jsr
+
+@* <div style="position: absolute"></div> *@
+<div class="page">
+  <div class="sidebar">
+    <div class="app-title">Shelf Layout Manager</div>
+    <div class="flex flex-col p-4 gap-0.5">
+      <NavLink href="" Match="NavLinkMatch.All">
+        <div class="nav-item">
+          <span class="material-symbols-outlined">home</span><span class="nav-item-title">Home</span>
+        </div>
+      </NavLink>
+      <NavLink href="shelves">
+        <div class="nav-item">
+          <span class="material-symbols-outlined">shelves</span><span class="nav-item-title">Shelves</span>
+        </div>
+      </NavLink>
+      <NavLink href="skus">
+        <div class="nav-item">
+          <span class="material-symbols-outlined">local_drink</span><span class="nav-item-title">Skus</span>
+        </div>
+      </NavLink>
+    </div>
+  </div>
+  <main>
+    <div class="flex justify-center" style="position: relative">
+      <div class="theme-buttons">
+        <div class="theme-button @GetActiveClass("theme-light")" @onclick="@(e => SelectTheme("theme-light"))">
+          <span class="material-symbols-outlined">light_mode</span>
+        </div>
+        <div class="theme-button @GetActiveClass("theme-dark")" @onclick="@(e => SelectTheme("theme-dark"))">
+          <span class="material-symbols-outlined">dark_mode</span>
+        </div>
+      </div>
+      @Body
+    </div>
+  </main>
+</div>
+
+@code {
+  string currentTheme = "theme-dark";
+
+  protected override async Task OnInitializedAsync()
+  {
+    currentTheme = await jsr.InvokeAsync<string>("getTheme");
+  }
+
+  private async Task SelectTheme(string theme)
+  {
+    currentTheme = theme;
+
+    await jsr.InvokeVoidAsync("setTheme", currentTheme);
+  }
+
+  private string GetActiveClass(string theme) => theme == currentTheme ? "theme-button-active" : "";
+}

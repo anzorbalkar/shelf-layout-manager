@@ -1,0 +1,54 @@
+@page "/skus"
+@inject HttpClient Http
+@inject IConfiguration Configuration
+
+<PageTitle>Skus</PageTitle>
+
+<div class="page-centered">
+  <div class="page-title">Skus</div>
+
+  @if (skus is not null)
+  {
+    <div class="flex flex-col gap-6">
+      @foreach (var sku in skus)
+      {
+        <div class="flex gap-4">
+          <div class="sku-image">
+            <img class="object-contain" src="@sku.ImageUrl" width="100%" height="100%" alt="@sku.NameJp">
+          </div>
+          <div class="flex-1 flex flex-col">
+            <div>
+              <div class="text-title">@sku.NameJp</div>
+              <div>@sku.NameEn</div>
+            </div>
+            <div class="text-light text-sm mb-1">
+              <span>JanCode: @sku.JanCode</span>
+              <span> · </span>
+              <span>@(sku.Volume)ml</span>
+              <span> · </span>
+              <span>@(sku.Shape)</span>
+            </div>
+            <div class="text-light text-xs">Registered @sku.RegistrationDate?.ToLocalTime().ToString("MMM dd, yyyy hh:mm:ss tt")</div>
+          </div>
+          <div class="flex items-center">
+            <div class="badge badge-green">Active</div>
+          </div>
+        </div>
+
+        if (sku != skus.Last())
+        {
+          <div class="hr"></div>
+        }
+      }
+    </div>
+  }
+</div>
+
+@code {
+  private Sku[]? skus;
+
+  protected override async Task OnInitializedAsync()
+  {
+    skus = await Http.GetFromJsonAsync<Sku[]>("v1/skus") ?? [];
+  }
+}
